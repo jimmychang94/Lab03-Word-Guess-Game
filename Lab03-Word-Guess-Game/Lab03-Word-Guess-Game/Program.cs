@@ -9,23 +9,22 @@ namespace Lab03_Word_Guess_Game
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+            string[] startingWords = new string[] { "cat", "dog", "tea", "sun", "code", "pull", "loop", "exit", "catch", "mouse", "hello", "world", "class", "object", "string", "update", "boolean", "fellows", "request", "supercalifragilisticexpialidocious" };
             string path = "../../../storedWords.txt";
-            CreateFile(path);
+            CreateFile(path, startingWords);
             bool keepPlaying = true;
             while (keepPlaying)
             {
                 keepPlaying = Menu(path);
             }
-            // Game(path);
         }
 
         /// <summary>
         /// This method contains the menu and allows the user to navigate to other aspects of the application.
-        /// While this method doesn't directly use the input of path; methods called within require it.
         /// The return allows for the menu to loop if placed in a while loop (and assigned to the condition).
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <param name="path">This is the relative url to where the file with the words are</param>
+        /// <returns>This returns whether the user wants to exit the game or not</returns>
         static bool Menu(string path)
         {
             Options();
@@ -47,7 +46,11 @@ namespace Lab03_Word_Guess_Game
                     Game(path);
                     break;
                 case 2:
-                    Admin(path);
+                    bool adminStop = false;
+                    while (!adminStop)
+                    {
+                        adminStop = Admin(path);
+                    }
                     break;
                 case 3:
                     DeleteFile(path);
@@ -71,9 +74,10 @@ namespace Lab03_Word_Guess_Game
         }
 
         /// <summary>
-        /// This uses the path to read the file and then chooses a random word from the file and starts the game.
+        /// This method reads the file and then chooses a random word from the file and starts the game.
+        /// It is the foundation for the game. It also responds once you have fininshed the game.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">This is the relative url to where the words are located</param>
         static void Game(string path)
         {
             string[] allWords = ReadAFile(path);
@@ -99,8 +103,8 @@ namespace Lab03_Word_Guess_Game
         /// <summary>
         /// This method contains the structure of the game. It requires the chosen word and the array of " _ " that represent the word.
         /// </summary>
-        /// <param name="chosenWord"></param>
-        /// <param name="segmentedWord"></param>
+        /// <param name="chosenWord">This is the randomly chosen word</param>
+        /// <param name="segmentedWord">This holds the array of " _ " representing the letters in the word</param>
         static void GameMechanic(string chosenWord, string[] segmentedWord)
         {
             bool solved = false;
@@ -129,12 +133,13 @@ namespace Lab03_Word_Guess_Game
         /// <summary>
         /// This method is used to make sure that the user gives a letter and also that it isn't already written. It then returns the user's response.
         /// </summary>
-        /// <param name="guessedLetters"></param>
+        /// <param name="guessedLetters">This is the string of letters that the user has guessed</param>
         /// <returns>The letter guessed by the user.</returns>
         static string UserGuess(string guessedLetters)
         {
             try
             {
+                // This allows for the user to have a bit more leeway in how they write the letter.
                 string userLetter = Console.ReadLine().Trim().ToLower();
                 if (userLetter.Length != 1)
                 {
@@ -159,10 +164,10 @@ namespace Lab03_Word_Guess_Game
         }
 
         /// <summary>
-        /// This method prints onto the console the " _ " that represent the word. To do that it requires that array to be put in.
+        /// This method prints onto the console the " _ " that represent the word.
         /// </summary>
-        /// <param name="segmentedWord"></param>
-        static void HiddenWord (string[] segmentedWord)
+        /// <param name="segmentedWord">The array of " _ " that represents the word</param>
+        static void HiddenWord(string[] segmentedWord)
         {
             foreach (string letter in segmentedWord)
             {
@@ -176,9 +181,9 @@ namespace Lab03_Word_Guess_Game
         /// If so, it will replace the " _ " in the array wherever the letter is in the chosen word.
         /// It then returns the array so that people can continue guessing.
         /// </summary>
-        /// <param name="segmentedWord"></param>
-        /// <param name="chosenWord"></param>
-        /// <param name="userLetter"></param>
+        /// <param name="segmentedWord">The array of " _ " that represent the word</param>
+        /// <param name="chosenWord">The randomly chosen word that the user is trying to guess</param>
+        /// <param name="userLetter">The letter that the user guessed</param>
         /// <returns></returns>
         static string[] Comparison(string[] segmentedWord, string chosenWord, string userLetter)
         {
@@ -195,105 +200,159 @@ namespace Lab03_Word_Guess_Game
             return segmentedWord;
         }
 
-        static void Admin(string path)
+        /// <summary>
+        /// This holds the admin framework which allows the user to view all words, add a word, and delete a word.
+        /// </summary>
+        /// <param name="path">The relative url to where the words are located</param>
+        /// <returns>whether the user wants to continue in the admin screen or not</returns>
+        static bool Admin(string path)
         {
-
+            AdminOptions();
+            Int32.TryParse(Console.ReadLine(), out int adminChoice);
+            switch (adminChoice)
+            {
+                case 1:
+                    ViewAllWords(path);
+                    break;
+                case 2:
+                    Console.WriteLine("What word would you like to add?");
+                    string addedWord = Console.ReadLine().Trim();
+                    AddAWord(path, addedWord);
+                    Console.Clear();
+                    Console.WriteLine("Your word has been added");
+                    break;
+                case 3:
+                    Console.WriteLine("What word would you like to delete?");
+                    DeleteAWord(path);
+                    break;
+                case 4:
+                    return true;
+                default:
+                    Console.WriteLine("Sorry, I didn't understand.");
+                    break;
+            }
+            return false;
         }
 
+        /// <summary>
+        /// This method just hold the options you get in the admin view.
+        /// </summary>
         static void AdminOptions()
         {
             Console.WriteLine("What would you like to do?");
+            Console.WriteLine("1. View all words");
+            Console.WriteLine("2. Add a word");
+            Console.WriteLine("3. Delete a word");
+            Console.WriteLine("4. Exit");
         }
 
         /// <summary>
         /// This method displays all the words in a file.
-        /// It requires a path in order to find the file it is meant to read.
         /// The try/catch block is to catch for when there is no file there for it to read.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">The relative url to where the words are located</param>
         static void ViewAllWords(string path)
         {
-            try
+            string[] allWords = ReadAFile(path);
+            foreach (string word in allWords)
             {
-                string[] allWords = ReadAFile(path);
-                foreach (string word in allWords)
-                {
-                    Console.WriteLine(word);
-                }
+                Console.WriteLine(word);
             }
-            catch (Exception)
+
+        }
+
+        /// <summary>
+        /// This method first deletes a file if there is one. It then creates a new file and then writes some words into the file. 
+        /// </summary>
+        /// <param name="path">The relative url to where the words are located</param>
+        /// <param name="array">An array of words to put into the file</param>
+        public static void CreateFile(string path, string[] array)
+        {
+            DeleteFile(path);
+            using (StreamWriter fileNew = new StreamWriter(path))
             {
-                Console.WriteLine("Sorry, something went wrong with reading the file.");
+                foreach (string word in array)
+                {
+                    fileNew.WriteLine(word);
+                }
             }
         }
 
         /// <summary>
-        /// This method creates a new file if there is none. It then writes some words into the file.
-        /// It requires a path to indicate where it should look for/make a file.
+        /// This method just reads all the words in a file and returns it if a file exists and throws an exception if it doesn't. 
         /// </summary>
-        /// <param name="path"></param>
-        static void CreateFile(string path)
+        /// <param name="path">The relative url to where the words are located</param>
+        /// <returns>This returns an array of all the words in the file</returns>
+        public static string[] ReadAFile(string path)
         {
-            if (!File.Exists(path))
+            string[] allWords = File.ReadAllLines(path);
+            return allWords;
+        }
+        
+        /// <summary>
+        ///  This method has the user tell us what word they want to add
+        ///  It only adds it to the file if the word is not already in the file.
+        /// 
+        /// </summary>
+        /// <param name="path">The relative url to where the words are located</param>
+        /// <param name="addedWord">The word that the user wants to remove</param>
+        public static void AddAWord(string path, string addedWord)
+        {
+            string[] allWords = ReadAFile(path);
+            foreach (string word in allWords)
             {
-                using (StreamWriter fileNew = new StreamWriter(path))
+                if (string.Equals(word, addedWord, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    fileNew.WriteLine("cat");
-                    fileNew.WriteLine("dog");
-                    fileNew.WriteLine("tea");
-                    fileNew.WriteLine("sun");
-                    fileNew.WriteLine("code");
-                    fileNew.WriteLine("pull");
-                    fileNew.WriteLine("loop");
-                    fileNew.WriteLine("exit");
-                    fileNew.WriteLine("catch");
-                    fileNew.WriteLine("mouse");
-                    fileNew.WriteLine("hello");
-                    fileNew.WriteLine("world");
-                    fileNew.WriteLine("class");
-                    fileNew.WriteLine("object");
-                    fileNew.WriteLine("string");
-                    fileNew.WriteLine("update");
-                    fileNew.WriteLine("boolean");
-                    fileNew.WriteLine("fellows");
-                    fileNew.WriteLine("request");
-                    fileNew.WriteLine("supercalifragilisticexpialidocious");
+                    return;
                 }
+
+            }
+            using (StreamWriter newWord = File.AppendText(path))
+            {
+                newWord.WriteLine(addedWord);
             }
         }
+
+        /// <summary>
+        /// This method takes the user input of what word they want to delete.
+        /// It then compares it to the other words on file and if it finds it then it removes it.
+        /// </summary>
+        /// <param name="path">The relative url to where the words are located</param>
+        static void DeleteAWord(string path)
+        {
+            string[] allWords = ReadAFile(path);
+            string[] deletedWordArray = new string[allWords.Length];
+            string deleteWord = Console.ReadLine().Trim();
+            int counter = 0;
+            for (int i = 0; i < allWords.Length; i ++)
+            {
+                if (deleteWord != allWords[i])
+                {
+                    deletedWordArray[counter] = allWords[i];
+                    counter++;
+                }
+            }
+
+            CreateFile(path, deletedWordArray);
+            Console.WriteLine($"{deleteWord} has been terminated.");
+        }
+
+
 
         /// <summary>
         /// This method deletes a file at a designated location based off of the input path.
         /// </summary>
-        /// <param name="path"></param>
-        static void DeleteFile(string path)
+        /// <param name="path">The relative url to where the words are located</param>
+        public static void DeleteFile(string path)
         {
             File.Delete(path);
-        }
-
-        /// <summary>
-        /// This method just reads all the words in a file and returns it if a file exists and throws an exception if it doesn't.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        static string[] ReadAFile(string path)
-        {
-            try
-            {
-                string[] allWords = File.ReadAllLines(path);
-                return allWords;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
         }
         
         /// <summary>
         /// This method takes in an array of all the words and then uses a random number generator to choose one of the words in the array and returns that string.
         /// </summary>
-        /// <param name="allWords"></param>
-        /// <returns></returns>
+        /// <param name="allWords">This is an array of all the words in the file</param>
+        /// <returns>A random word from the array of words</returns>
         static string GetWord(string[] allWords)
         {
             int randNum = RandomNumberGenerator(allWords);
@@ -305,8 +364,8 @@ namespace Lab03_Word_Guess_Game
         /// This method is a number generator specifically for an array of strings.
         /// It uses the length of the array as an exclusive max for generating a random number.
         /// </summary>
-        /// <param name="array"></param>
-        /// <returns></returns>
+        /// <param name="array">This is an array of all the words in the file</param>
+        /// <returns>A random number between 0 and the length of the array</returns>
         static int RandomNumberGenerator(string[] array)
         {
             Random number = new Random();
