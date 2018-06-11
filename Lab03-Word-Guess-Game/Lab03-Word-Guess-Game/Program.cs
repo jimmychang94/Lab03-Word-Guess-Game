@@ -185,7 +185,7 @@ namespace Lab03_Word_Guess_Game
         /// <param name="chosenWord">The randomly chosen word that the user is trying to guess</param>
         /// <param name="userLetter">The letter that the user guessed</param>
         /// <returns></returns>
-        static string[] Comparison(string[] segmentedWord, string chosenWord, string userLetter)
+        public static string[] Comparison(string[] segmentedWord, string chosenWord, string userLetter)
         {
             if (chosenWord.ToLower().Contains(userLetter))
             {
@@ -266,7 +266,8 @@ namespace Lab03_Word_Guess_Game
         /// </summary>
         /// <param name="path">The relative url to where the words are located</param>
         /// <param name="array">An array of words to put into the file</param>
-        public static void CreateFile(string path, string[] array)
+        /// <returns>This returns a boolean for testing if it works</returns>
+        public static bool CreateFile(string path, string[] array)
         {
             DeleteFile(path);
             using (StreamWriter fileNew = new StreamWriter(path))
@@ -276,6 +277,7 @@ namespace Lab03_Word_Guess_Game
                     fileNew.WriteLine(word);
                 }
             }
+            return true;
         }
 
         /// <summary>
@@ -343,11 +345,26 @@ namespace Lab03_Word_Guess_Game
         /// This method deletes a file at a designated location based off of the input path.
         /// </summary>
         /// <param name="path">The relative url to where the words are located</param>
-        public static void DeleteFile(string path)
+        /// <returns>This returns a boolean for testing if it works</returns>
+        public static bool DeleteFile(string path)
         {
             File.Delete(path);
+            return true;
         }
         
+        /// <summary>
+        /// This method updates a file with a new word or phrase
+        /// </summary>
+        /// <param name="path">The relative url to where the file is located</param>
+        /// <param name="update">The word or phrase we want to add</param>
+        public static void UpdateAFile(string path, string update)
+        {
+            using (StreamWriter updateFile = File.AppendText(path))
+            {
+                updateFile.WriteLine(update);
+            }
+        }
+
         /// <summary>
         /// This method takes in an array of all the words and then uses a random number generator to choose one of the words in the array and returns that string.
         /// </summary>
